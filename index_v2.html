@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>双盲诗歌 Pro</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #f7f4ee;
+      --card: #fffdf8;
+      --text: #2d2a26;
+      --muted: #7a746d;
+      --primary: #6c5ce7;
+      --primary-2: #8e7dff;
+      --border: #e8dfd2;
+      --danger: #d63031;
+      --ok: #0f9d58;
+      --gold: #c58b00;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #faf6ef 0%, #f5efe6 100%);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px 16px 48px;
+    }
+    .title { font-size: 28px; font-weight: 800; margin: 18px 0 8px; letter-spacing: .5px; }
+    .subtitle { color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .row { display: flex; gap: 12px; }
+    .row > * { flex: 1; }
+    @media (max-width: 720px) { .row { flex-direction: column; } }
+    label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+    input, textarea, select, button { font: inherit; }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px 14px;
+      color: var(--text);
+      outline: none;
+    }
+    textarea { min-height: 120px; resize: vertical; line-height: 1.7; }
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-secondary { background: #eee8ff; color: #4b3ecf; }
+    .btn-danger { background: #ffe5e5; color: var(--danger); }
+    .btn-ghost { background: #f5f0e8; color: #6a6054; }
+    .muted { color: var(--muted); }
+    .small { font-size: 13px; }
+    .center { text-align: center; }
+    .hidden { display: none !important; }
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      background: #f2edff;
+      color: #5646dd;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    .poem-box {
+      background: #fff;
+      border: 1px dashed #d8cfbf;
+      border-radius: 16px;
+      padding: 16px;
+      line-height: 2;
+      white-space: pre-wrap;
+      min-height: 120px;
+    }
+    .status-ok { color: var(--ok); font-weight: 700; }
+    .status-wait { color: #c27c00; font-weight: 700; }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 800; letter-spacing: 1px; font-size: 22px; }
+    .footer-note { margin-top: 10px; font-size: 12px; color: var(--muted); text-align: center; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .tab-btn { background: #f5f0e8; color: #705f52; }
+    .tab-btn.active { background: var(--primary); color: #fff; }
+    .list { display: grid; gap: 12px; }
+    .gallery-item, .rank-item {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #fff;
+      padding: 14px;
+    }
+    .gallery-item .meta, .rank-item .meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .like-row { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px; flex-wrap:wrap; }
+    .heart { color: #c84a6d; font-weight: 700; }
+    .empty { color: var(--muted); text-align: center; padding: 20px 0; }
+    .notice {
+      background: #fff7da;
+      border: 1px solid #f2deb0;
+      color: #7b5d15;
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">双盲诗歌 Pro</div>
+    <div class="subtitle">两个人进入同一房间，轮流各写一句。在揭晓前，谁也看不到对方写的内容。现在支持多种房间模式、作品广场与排行榜。</div>
+
+    <div class="notice">
+      这份增强版前端已经把你提到的功能入口和交互都补上了。要让“作品广场 / 点赞 / 排行榜”真正可用，还需要在 Supabase 里补几张表和几个字段，文末我会一起说明。
+    </div>
+
+    <div id="configCard" class="card">
+      <label>1. 先配置 Supabase</label>
+      <div class="row">
+        <div>
+          <label for="supabaseUrl">SUPABASE_URL</label>
+          <input id="supabaseUrl" placeholder="https://xxxx.supabase.co" />
+        </div>
+        <div>
+          <label for="supabaseAnonKey">SUPABASE_ANON_KEY</label>
+          <input id="supabaseAnonKey" placeholder="匿名公钥 anon key" />
+        </div>
+      </div>
+      <div style="margin-top: 12px;">
+        <button class="btn-secondary" onclick="saveConfig()">保存配置到本地</button>
+      </div>
+      <div class="small muted" style="margin-top: 10px;">第一次使用时填写，之后会保存在浏览器本地。部署到 GitHub Pages 后也能用。</div>
+    </div>
+
+    <div id="authCard" class="card hidden">
+      <label>2. 输入昵称</label>
+      <input id="nickname" maxlength="12" placeholder="例如：木木" />
+      <div style="margin-top: 12px;" class="row">
+        <button class="btn-primary" onclick="showCreateOptions()">创建房间</button>
+        <button class="btn-secondary" onclick="showJoin()">加入房间</button>
+        <button class="btn-ghost" onclick="openHub()">作品广场</button>
+      </div>
+
+      <div id="createBox" class="hidden" style="margin-top: 14px;">
+        <div class="row">
+          <div>
+            <label for="themeInput">主题</label>
+            <input id="themeInput" maxlength="20" placeholder="默认：自由创作" />
+          </div>
+          <div>
+            <label for="totalRounds">总轮数</label>
+            <select id="totalRounds">
+              <option value="2">2 轮</option>
+              <option value="4" selected>4 轮</option>
+              <option value="6">6 轮</option>
+            </select>
+          </div>
+        </div>
+        <div class="row" style="margin-top: 12px;">
+          <div>
+            <label for="revealMode">公布方式</label>
+            <select id="revealMode">
+              <option value="final">写满全部轮次后统一揭晓</option>
+              <option value="round">每轮完成后立即公布这一轮</option>
+            </select>
+          </div>
+          <div>
+            <label for="linePosition">我的书写部分</label>
+            <select id="linePosition">
+              <option value="upper">我写上半句</option>
+              <option value="lower">我写下半句</option>
+              <option value="auto">自动分配</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="joinBox" class="hidden" style="margin-top: 12px;">
+        <input id="joinCode" maxlength="6" placeholder="输入 6 位邀请码" style="text-transform: uppercase;" />
+        <div class="row" style="margin-top: 10px;">
+          <div>
+            <label for="joinLinePosition">加入后我想写</label>
+            <select id="joinLinePosition">
+              <option value="auto">自动分配</option>
+              <option value="upper">上半句</option>
+              <option value="lower">下半句</option>
+            </select>
+          </div>
+          <div style="align-self:end;">
+            <button class="btn-primary" onclick="joinRoom()">确认加入</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="hubCard" class="card hidden">
+      <div class="topbar">
+        <div>
+          <div class="title" style="font-size: 22px; margin: 0;">作品广场</div>
+          <div class="small muted">查看历史作品、点赞，以及总排行榜</div>
+        </div>
+        <button class="btn-ghost" onclick="closeHub()">返回首页</button>
+      </div>
+      <div class="tabs">
+        <button id="tabGallery" class="tab-btn active" onclick="switchHubTab('gallery')">历史作品</button>
+        <button id="tabRanking" class="tab-btn" onclick="switchHubTab('ranking')">排行榜</button>
+      </div>
+      <div id="galleryPanel">
+        <div class="row">
+          <input id="gallerySearch" placeholder="搜索主题 / 作者 / 内容关键词" />
+          <button class="btn-secondary" onclick="loadGallery()">搜索</button>
+        </div>
+        <div id="galleryList" class="list" style="margin-top: 12px;"></div>
+      </div>
+      <div id="rankingPanel" class="hidden">
+        <div id="rankingList" class="list"></div>
+      </div>
+    </div>
+
+    <div id="roomCard" class="card hidden">
+      <div class="topbar">
+        <div>
+          <div class="small muted">房间邀请码</div>
+          <div id="roomCode" class="code">------</div>
+        </div>
+        <button class="btn-danger" onclick="leaveRoom()">退出房间</button>
+      </div>
+      <div>
+        <span id="playerRole" class="pill">身份：-</span>
+        <span id="playerPart" class="pill">书写部分：-</span>
+        <span id="roundInfo" class="pill">第 1 / 4 轮</span>
+        <span id="roomStatus" class="pill">等待中</span>
+        <span id="revealModeInfo" class="pill">公布方式：-</span>
+      </div>
+      <div id="playersInfo" class="small muted" style="margin-top: 8px;">当前房间成员：-</div>
+      <div id="themeInfo" class="small muted" style="margin-top: 4px;">主题：自由创作</div>
+    </div>
+
+    <div id="writeCard" class="card hidden">
+      <label id="writeLabel">写下这一轮的句子</label>
+      <textarea id="lineInput" maxlength="80" placeholder="请输入一句诗，提交后本轮不可修改"></textarea>
+      <div class="small muted" style="margin-top: 8px;">每轮最多 80 字。提交后进入等待状态，直到对方也提交。</div>
+      <div style="margin-top: 12px;" class="row">
+        <button class="btn-primary" onclick="submitLine()">提交这一句</button>
+        <button class="btn-secondary" onclick="refreshState()">刷新状态</button>
+      </div>
+      <div id="submitStatus" class="small" style="margin-top: 10px;"></div>
+    </div>
+
+    <div id="waitingCard" class="card hidden center">
+      <div class="title" style="font-size: 22px; margin-top: 0;">等待中</div>
+      <div class="subtitle" style="margin-bottom: 10px;">你已经提交了本轮诗句。双盲模式下，暂时不会显示对方的内容。</div>
+      <button class="btn-secondary" onclick="refreshState()">刷新状态</button>
+    </div>
+
+    <div id="roundRevealCard" class="card hidden">
+      <div class="topbar">
+        <div>
+          <div class="title" style="font-size: 22px; margin: 0;">本轮揭晓</div>
+          <div class="small muted">当前房间已开启“每轮公布”模式</div>
+        </div>
+        <button id="nextRoundBtn" class="btn-primary" onclick="goNextRound()">进入下一轮</button>
+      </div>
+      <div class="small muted" id="roundRevealMeta">第 1 轮</div>
+      <div id="roundRevealText" class="poem-box"></div>
+    </div>
+
+    <div id="revealCard" class="card hidden">
+      <div class="topbar">
+        <div>
+          <div class="title" style="font-size: 22px; margin: 0;">揭晓结果</div>
+          <div class="small muted">全部轮次完成后显示完整诗歌</div>
+        </div>
+        <button id="revealBtn" class="btn-primary" onclick="revealPoem()">揭晓</button>
+      </div>
+      <label>交错合成版</label>
+      <div id="mixedPoem" class="poem-box"></div>
+      <div class="row" style="margin-top: 14px;">
+        <div>
+          <label>A 的句子</label>
+          <div id="poemA" class="poem-box"></div>
+        </div>
+        <div>
+          <label>B 的句子</label>
+          <div id="poemB" class="poem-box"></div>
+        </div>
+      </div>
+      <div style="margin-top: 12px;" class="row">
+        <button class="btn-secondary" onclick="copyResult()">复制结果</button>
+        <button class="btn-secondary" onclick="publishCurrentPoem()">发布到作品广场</button>
+        <button class="btn-secondary" onclick="restartRoom()">再来一局</button>
+      </div>
+      <div id="publishStatus" class="small muted" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="footer-note">建议通过微信直接分享这个页面链接给同学使用。</div>
+  </div>
+
+  <script>
+    let supabaseClient = null;
+    let state = {
+      room: null,
+      player: null,
+      players: [],
+      lines: [],
+      subscription: null,
+      gallery: [],
+      ranking: [],
+    };
+
+    const LOCAL_KEY = 'blind_poetry_local_v2';
+
+    function $(id) { return document.getElementById(id); }
+    function saveLocal(data) {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify({
+        ...JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}'),
+        ...data,
+      }));
+    }
+    function getLocal() { return JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}'); }
+    function randomCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let s = '';
+      for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+      return s;
+    }
+    function show(id, visible = true) { $(id).classList.toggle('hidden', !visible); }
+    function showJoin() { show('joinBox', true); show('createBox', false); }
+    function showCreateOptions() { show('createBox', true); show('joinBox', false); }
+    function openHub() {
+      show('configCard', false);
+      show('authCard', false);
+      show('hubCard', true);
+      loadGallery();
+      loadRanking();
+    }
+    function closeHub() {
+      show('hubCard', false);
+      show('configCard', true);
+      show('authCard', true);
+    }
+    function switchHubTab(tab) {
+      const isGallery = tab === 'gallery';
+      $('tabGallery').classList.toggle('active', isGallery);
+      $('tabRanking').classList.toggle('active', !isGallery);
+      show('galleryPanel', isGallery);
+      show('rankingPanel', !isGallery);
+      if (isGallery) loadGallery();
+      else loadRanking();
+    }
+
+    function initFromLocal() {
+      const local = getLocal();
+      if (local.supabaseUrl) $('supabaseUrl').value = local.supabaseUrl;
+      if (local.supabaseAnonKey) $('supabaseAnonKey').value = local.supabaseAnonKey;
+      if (local.nickname) $('nickname').value = local.nickname;
+      if (local.roomCode) $('joinCode').value = local.roomCode;
+      if (local.supabaseUrl && local.supabaseAnonKey) connectSupabase(local.supabaseUrl, local.supabaseAnonKey);
+    }
+
+    function saveConfig() {
+      const supabaseUrl = $('supabaseUrl').value.trim();
+      const supabaseAnonKey = $('supabaseAnonKey').value.trim();
+      if (!supabaseUrl || !supabaseAnonKey) return alert('请先填写 Supabase URL 和 anon key');
+      saveLocal({ supabaseUrl, supabaseAnonKey });
+      connectSupabase(supabaseUrl, supabaseAnonKey);
+      alert('配置已保存');
+    }
+
+    function connectSupabase(url, key) {
+      supabaseClient = window.supabase.createClient(url, key);
+      show('authCard', true);
+    }
+
+    function resolvePositions(existingPlayers, preferred) {
+      const taken = existingPlayers.map(p => p.line_position).filter(Boolean);
+      if (preferred && preferred !== 'auto' && !taken.includes(preferred)) return preferred;
+      if (!taken.includes('upper')) return 'upper';
+      if (!taken.includes('lower')) return 'lower';
+      return preferred === 'auto' ? 'upper' : preferred;
+    }
+
+    async function createRoom() {
+      try {
+        const nickname = $('nickname').value.trim();
+        if (!nickname) return alert('请先输入昵称');
+        saveLocal({ nickname });
+
+        let code = randomCode();
+        for (let i = 0; i < 5; i++) {
+          const { data: existing } = await supabaseClient.from('rooms').select('id').eq('code', code).maybeSingle();
+          if (!existing) break;
+          code = randomCode();
+        }
+
+        const theme = $('themeInput').value.trim() || '自由创作';
+        const totalRounds = Number($('totalRounds').value || 4);
+        const revealMode = $('revealMode').value || 'final';
+        const preferredPosition = $('linePosition').value || 'auto';
+        const position = preferredPosition === 'auto' ? 'upper' : preferredPosition;
+
+        const { data: room, error: roomError } = await supabaseClient
+          .from('rooms')
+          .insert({
+            code,
+            theme,
+            total_rounds: totalRounds,
+            current_round: 1,
+            status: 'waiting',
+            revealed: false,
+            reveal_mode: revealMode,
+            current_round_revealed: false,
+          })
+          .select()
+          .single();
+        if (roomError) throw roomError;
+
+        const { data: player, error: playerError } = await supabaseClient
+          .from('players')
+          .insert({
+            room_id: room.id,
+            nickname,
+            role: 'A',
+            line_position: position,
+          })
+          .select()
+          .single();
+        if (playerError) throw playerError;
+
+        state.room = room;
+        state.player = player;
+        saveLocal({ roomId: room.id, playerId: player.id, roomCode: room.code });
+        await enterRoom();
+      } catch (e) {
+        console.error(e);
+        alert('创建房间失败：' + e.message);
+      }
+    }
+
+    async function joinRoom() {
+      try {
+        const nickname = $('nickname').value.trim();
+        const code = $('joinCode').value.trim().toUpperCase();
+        if (!nickname) return alert('请先输入昵称');
+        if (!code) return alert('请输入邀请码');
+        saveLocal({ nickname, roomCode: code });
+
+        const { data: room, error: roomError } = await supabaseClient.from('rooms').select('*').eq('code', code).maybeSingle();
+        if (roomError) throw roomError;
+        if (!room) return alert('房间不存在');
+
+        const { data: existingPlayers, error: playersError } = await supabaseClient
+          .from('players')
+          .select('*')
+          .eq('room_id', room.id)
+          .order('created_at', { ascending: true });
+        if (playersError) throw playersError;
+        if (existingPlayers.length >= 2) return alert('房间已满');
+
+        const role = existingPlayers.some(p => p.role === 'A') ? 'B' : 'A';
+        const preferred = $('joinLinePosition').value || 'auto';
+        const linePosition = resolvePositions(existingPlayers, preferred);
+
+        const { data: player, error: playerError } = await supabaseClient
+          .from('players')
+          .insert({ room_id: room.id, nickname, role, line_position: linePosition })
+          .select()
+          .single();
+        if (playerError) throw playerError;
+
+        await supabaseClient.from('rooms').update({ status: 'playing' }).eq('id', room.id);
+
+        state.room = room;
+        state.player = player;
+        saveLocal({ roomId: room.id, playerId: player.id, roomCode: room.code });
+        await enterRoom();
+      } catch (e) {
+        console.error(e);
+        alert('加入房间失败：' + e.message);
+      }
+    }
+
+    async function enterRoom() {
+      show('configCard', false);
+      show('authCard', false);
+      show('hubCard', false);
+      show('roomCard', true);
+      await refreshState();
+      subscribeRoom();
+    }
+
+    function subscribeRoom() {
+      if (!state.room || !supabaseClient) return;
+      if (state.subscription) supabaseClient.removeChannel(state.subscription);
+      state.subscription = supabaseClient
+        .channel('room-' + state.room.id)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${state.room.id}` }, refreshState)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${state.room.id}` }, refreshState)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'lines', filter: `room_id=eq.${state.room.id}` }, refreshState)
+        .subscribe();
+    }
+
+    async function refreshState() {
+      try {
+        const local = getLocal();
+        const roomId = state.room?.id || local.roomId;
+        const playerId = state.player?.id || local.playerId;
+        if (!roomId || !playerId || !supabaseClient) return;
+
+        const [{ data: room }, { data: player }, { data: players }, { data: lines }] = await Promise.all([
+          supabaseClient.from('rooms').select('*').eq('id', roomId).single(),
+          supabaseClient.from('players').select('*').eq('id', playerId).single(),
+          supabaseClient.from('players').select('*').eq('room_id', roomId).order('created_at', { ascending: true }),
+          supabaseClient.from('lines').select('*').eq('room_id', roomId).order('round_no', { ascending: true }).order('created_at', { ascending: true }),
+        ]);
+
+        state.room = room;
+        state.player = player;
+        state.players = players || [];
+        state.lines = lines || [];
+        render();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function render() {
+      if (!state.room || !state.player) return;
+      show('roomCard', true);
+
+      $('roomCode').textContent = state.room.code;
+      $('playerRole').textContent = `身份：${state.player.role}`;
+      $('playerPart').textContent = `书写部分：${state.player.line_position === 'lower' ? '下半句' : '上半句'}`;
+      $('roundInfo').textContent = `第 ${state.room.current_round} / ${state.room.total_rounds} 轮`;
+      $('roomStatus').textContent = `状态：${state.room.status}`;
+      $('revealModeInfo').textContent = `公布方式：${state.room.reveal_mode === 'round' ? '每轮公布' : '最终公布'}`;
+      $('themeInfo').textContent = `主题：${state.room.theme || '自由创作'}`;
+      $('playersInfo').textContent = `当前房间成员：${state.players.map(p => `${p.role} - ${p.nickname}（${p.line_position === 'lower' ? '下半句' : '上半句'}）`).join('，') || '-'}`;
+
+      const currentRound = state.room.current_round;
+      const myRoundLine = state.lines.find(l => l.player_id === state.player.id && l.round_no === currentRound);
+      const roundLines = state.lines.filter(l => l.round_no === currentRound);
+      const bothJoined = state.players.length === 2;
+      const bothSubmitted = roundLines.length >= 2;
+      const gameFinished = state.room.status === 'finished';
+
+      show('writeCard', false);
+      show('waitingCard', false);
+      show('roundRevealCard', false);
+      show('revealCard', false);
+
+      if (!bothJoined) {
+        show('waitingCard', true);
+        $('waitingCard').querySelector('.subtitle').textContent = '房间还没有满员，请把邀请码发给你的同学。';
+        return;
+      }
+
+      if (gameFinished) {
+        show('revealCard', true);
+        if (state.room.revealed) fillPoems();
+        else {
+          $('mixedPoem').textContent = '全部轮次已结束，点击“揭晓”显示完整结果。';
+          $('poemA').textContent = '';
+          $('poemB').textContent = '';
+        }
+        return;
+      }
+
+      if (state.room.reveal_mode === 'round' && bothSubmitted && state.room.current_round_revealed) {
+        show('roundRevealCard', true);
+        fillCurrentRoundReveal(currentRound);
+        return;
+      }
+
+      if (myRoundLine) {
+        show('waitingCard', true);
+        $('waitingCard').querySelector('.subtitle').textContent = bothSubmitted
+          ? (state.room.reveal_mode === 'round'
+              ? '本轮双方都已提交，进入本轮揭晓。若未自动更新，请点刷新。'
+              : '本轮双方都已提交，系统将进入下一轮。若未自动更新，请点刷新。')
+          : '你已经提交了本轮诗句，正在等待对方提交。';
+      } else {
+        show('writeCard', true);
+        $('writeLabel').textContent = `写下第 ${currentRound} 轮的${state.player.line_position === 'lower' ? '下半句' : '上半句'}`;
+        $('submitStatus').textContent = '';
+      }
+    }
+
+    async function submitLine() {
+      try {
+        const content = $('lineInput').value.trim();
+        if (!content) return alert('请先输入一句诗');
+        if (content.length > 80) return alert('请控制在 80 字以内');
+
+        const currentRound = state.room.current_round;
+        const already = state.lines.find(l => l.player_id === state.player.id && l.round_no === currentRound);
+        if (already) return alert('你已经提交过这一轮');
+
+        const { error } = await supabaseClient.from('lines').insert({
+          room_id: state.room.id,
+          player_id: state.player.id,
+          role: state.player.role,
+          round_no: currentRound,
+          content,
+          line_position: state.player.line_position || 'upper',
+        });
+        if (error) throw error;
+
+        $('lineInput').value = '';
+        $('submitStatus').textContent = '提交成功';
+        $('submitStatus').className = 'small status-ok';
+
+        await advanceRoundIfNeeded(currentRound);
+        await refreshState();
+      } catch (e) {
+        console.error(e);
+        $('submitStatus').textContent = '提交失败：' + e.message;
+        $('submitStatus').className = 'small';
+      }
+    }
+
+    async function advanceRoundIfNeeded(roundNo) {
+      const { data: roundLines, error } = await supabaseClient
+        .from('lines')
+        .select('*')
+        .eq('room_id', state.room.id)
+        .eq('round_no', roundNo);
+      if (error) throw error;
+      if (roundLines.length < 2) return;
+
+      if (state.room.reveal_mode === 'round') {
+        await supabaseClient.from('rooms').update({
+          status: 'round_revealed',
+          current_round_revealed: true,
+        }).eq('id', state.room.id);
+        return;
+      }
+
+      if (roundNo >= state.room.total_rounds) {
+        await supabaseClient.from('rooms').update({ status: 'finished' }).eq('id', state.room.id);
+      } else {
+        await supabaseClient.from('rooms').update({
+          current_round: roundNo + 1,
+          status: 'playing',
+          current_round_revealed: false,
+        }).eq('id', state.room.id).eq('current_round', roundNo);
+      }
+    }
+
+    function orderRoundLines(lines) {
+      return [...lines].sort((a, b) => {
+        const pa = a.line_position === 'lower' ? 2 : 1;
+        const pb = b.line_position === 'lower' ? 2 : 1;
+        return pa - pb;
+      });
+    }
+
+    function fillCurrentRoundReveal(roundNo) {
+      const lines = orderRoundLines(state.lines.filter(l => l.round_no === roundNo));
+      $('roundRevealMeta').textContent = `第 ${roundNo} 轮`;
+      $('roundRevealText').textContent = lines.map(l => l.content).join('\n') || '暂无内容';
+      $('nextRoundBtn').textContent = roundNo >= state.room.total_rounds ? '结束并进入总揭晓' : '进入下一轮';
+    }
+
+    async function goNextRound() {
+      try {
+        const currentRound = state.room.current_round;
+        if (currentRound >= state.room.total_rounds) {
+          await supabaseClient.from('rooms').update({
+            status: 'finished',
+            current_round_revealed: false,
+          }).eq('id', state.room.id);
+        } else {
+          await supabaseClient.from('rooms').update({
+            current_round: currentRound + 1,
+            status: 'playing',
+            current_round_revealed: false,
+          }).eq('id', state.room.id);
+        }
+        await refreshState();
+      } catch (e) {
+        alert('进入下一轮失败：' + e.message);
+      }
+    }
+
+    async function revealPoem() {
+      await supabaseClient.from('rooms').update({ revealed: true }).eq('id', state.room.id);
+      await refreshState();
+    }
+
+    function fillPoems() {
+      const linesA = state.lines.filter(l => l.role === 'A').sort((a, b) => a.round_no - b.round_no);
+      const linesB = state.lines.filter(l => l.role === 'B').sort((a, b) => a.round_no - b.round_no);
+      const aText = linesA.map(l => `【${l.round_no}】${l.content}`).join('\n');
+      const bText = linesB.map(l => `【${l.round_no}】${l.content}`).join('\n');
+
+      const mixed = [];
+      for (let i = 1; i <= state.room.total_rounds; i++) {
+        const pair = orderRoundLines(state.lines.filter(l => l.round_no === i));
+        pair.forEach(item => mixed.push(item.content));
+      }
+
+      $('poemA').textContent = aText || '暂无';
+      $('poemB').textContent = bText || '暂无';
+      $('mixedPoem').textContent = mixed.join('\n') || '暂无';
+    }
+
+    async function publishCurrentPoem() {
+      try {
+        if (!state.room || state.room.status !== 'finished') return alert('请在作品完成后再发布');
+        const mixed = $('mixedPoem').textContent.trim();
+        if (!mixed || mixed === '暂无') return alert('请先揭晓作品');
+
+        const authors = state.players.map(p => p.nickname).join(' × ');
+        const payload = {
+          room_id: state.room.id,
+          room_code: state.room.code,
+          theme: state.room.theme || '自由创作',
+          reveal_mode: state.room.reveal_mode || 'final',
+          total_rounds: state.room.total_rounds || 4,
+          authors,
+          poem_text: mixed,
+          likes_count: 0,
+        };
+
+        const { error } = await supabaseClient.from('poems').upsert(payload, { onConflict: 'room_id' });
+        if (error) throw error;
+        $('publishStatus').textContent = '已发布到作品广场';
+      } catch (e) {
+        console.error(e);
+        $('publishStatus').textContent = '发布失败：' + e.message;
+      }
+    }
+
+    async function loadGallery() {
+      if (!supabaseClient) return;
+      const keyword = $('gallerySearch')?.value?.trim();
+      const box = $('galleryList');
+      box.innerHTML = '<div class="empty">加载中…</div>';
+      try {
+        let query = supabaseClient.from('poems').select('*').order('likes_count', { ascending: false }).order('created_at', { ascending: false }).limit(30);
+        if (keyword) query = query.or(`theme.ilike.%${keyword}%,authors.ilike.%${keyword}%,poem_text.ilike.%${keyword}%`);
+        const { data, error } = await query;
+        if (error) throw error;
+        state.gallery = data || [];
+        renderGallery();
+      } catch (e) {
+        box.innerHTML = `<div class="empty">暂时无法读取作品广场：${e.message}</div>`;
+      }
+    }
+
+    function renderGallery() {
+      const box = $('galleryList');
+      if (!state.gallery.length) {
+        box.innerHTML = '<div class="empty">还没有公开作品，快成为第一个发布的人吧。</div>';
+        return;
+      }
+      box.innerHTML = state.gallery.map(item => `
+        <div class="gallery-item">
+          <div class="meta">主题：${escapeHtml(item.theme || '自由创作')} ｜ 作者：${escapeHtml(item.authors || '匿名')} ｜ ${formatTime(item.created_at)}</div>
+          <div class="poem-box">${escapeHtml(item.poem_text || '')}</div>
+          <div class="like-row">
+            <div class="small muted">模式：${item.reveal_mode === 'round' ? '每轮公布' : '最终公布'} ｜ 共 ${item.total_rounds || 4} 轮</div>
+            <button class="btn-secondary" onclick="likePoem('${item.id}')">❤️ 点赞（${item.likes_count || 0}）</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function loadRanking() {
+      if (!supabaseClient) return;
+      const box = $('rankingList');
+      box.innerHTML = '<div class="empty">加载中…</div>';
+      try {
+        const { data, error } = await supabaseClient
+          .from('poems')
+          .select('id, theme, authors, likes_count, created_at')
+          .order('likes_count', { ascending: false })
+          .order('created_at', { ascending: false })
+          .limit(20);
+        if (error) throw error;
+        state.ranking = data || [];
+        renderRanking();
+      } catch (e) {
+        box.innerHTML = `<div class="empty">暂时无法读取排行榜：${e.message}</div>`;
+      }
+    }
+
+    function renderRanking() {
+      const box = $('rankingList');
+      if (!state.ranking.length) {
+        box.innerHTML = '<div class="empty">排行榜还没有数据。</div>';
+        return;
+      }
+      box.innerHTML = state.ranking.map((item, index) => `
+        <div class="rank-item">
+          <div class="topbar" style="margin-bottom:8px;">
+            <div><span class="pill">TOP ${index + 1}</span></div>
+            <div class="heart">❤️ ${item.likes_count || 0}</div>
+          </div>
+          <div style="font-weight:800; margin-bottom:6px;">${escapeHtml(item.theme || '自由创作')}</div>
+          <div class="meta">作者：${escapeHtml(item.authors || '匿名')} ｜ ${formatTime(item.created_at)}</div>
+        </div>
+      `).join('');
+    }
+
+    async function likePoem(poemId) {
+      try {
+        const local = getLocal();
+        const likedKey = `liked_poem_${poemId}`;
+        if (local[likedKey]) return alert('你已经点过赞了');
+
+        const target = state.gallery.find(x => x.id === poemId) || state.ranking.find(x => x.id === poemId);
+        if (!target) return;
+
+        const nextCount = (target.likes_count || 0) + 1;
+        const { error } = await supabaseClient.from('poems').update({ likes_count: nextCount }).eq('id', poemId);
+        if (error) throw error;
+
+        saveLocal({ [likedKey]: true });
+        await loadGallery();
+        await loadRanking();
+      } catch (e) {
+        alert('点赞失败：' + e.message);
+      }
+    }
+
+    async function restartRoom() {
+      if (!confirm('确定在当前房间再来一局吗？将清空旧诗句。')) return;
+      await supabaseClient.from('lines').delete().eq('room_id', state.room.id);
+      await supabaseClient.from('rooms').update({
+        current_round: 1,
+        status: 'playing',
+        revealed: false,
+        current_round_revealed: false,
+      }).eq('id', state.room.id);
+      await refreshState();
+    }
+
+    async function leaveRoom() {
+      saveLocal({ roomId: null, playerId: null, roomCode: '' });
+      if (state.subscription && supabaseClient) supabaseClient.removeChannel(state.subscription);
+      state = { room: null, player: null, players: [], lines: [], subscription: null, gallery: [], ranking: [] };
+      show('configCard', true);
+      show('authCard', true);
+      show('roomCard', false);
+      show('writeCard', false);
+      show('waitingCard', false);
+      show('roundRevealCard', false);
+      show('revealCard', false);
+      show('hubCard', false);
+      $('joinCode').value = '';
+    }
+
+    async function copyResult() {
+      const text = [
+        `双盲诗歌｜房间 ${state.room.code}`,
+        `主题：${state.room.theme || '自由创作'}`,
+        `模式：${state.room.reveal_mode === 'round' ? '每轮公布' : '最终公布'}`,
+        '',
+        '交错合成版：',
+        $('mixedPoem').textContent,
+        '',
+        'A：',
+        $('poemA').textContent,
+        '',
+        'B：',
+        $('poemB').textContent,
+      ].join('\n');
+      await navigator.clipboard.writeText(text);
+      alert('已复制到剪贴板');
+    }
+
+    function formatTime(value) {
+      if (!value) return '未知时间';
+      return new Date(value).toLocaleString('zh-CN', { hour12: false });
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;')
+        .replaceAll('\n', '<br>');
+    }
+
+    initFromLocal();
+  </script>
+</body>
+</html>
