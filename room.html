@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>房间 | 双盲诗歌 Pro</title>
+<link rel="stylesheet" href="poem2_styles.css">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="poem2_app.js"></script>
+</head><body onload="BlindPoetry.initRoom()">
+<div class="wrap">
+  <div class="title">房间进行中</div>
+  <div class="subtitle">手机浏览器从作品广场或排行榜进入本页后，可以直接左滑返回上一页。</div>
+  <div id="navMount"></div>
+  <div class="card topbar"><div><div class="small muted">房间链接邀请码</div><div id="roomLinkCode" class="code">------</div></div><a href="index.html" class="btn btn-ghost">返回首页</a></div>
+
+  <div id="roomCard" class="card">
+    <div class="topbar"><div><div class="small muted">房间邀请码</div><div id="roomCode" class="code">------</div></div><button class="btn-danger" onclick="roomPage.leaveRoom()">退出房间</button></div>
+    <div><span id="playerRole" class="pill">身份：-</span><span id="playerPart" class="pill">书写部分：-</span><span id="roundInfo" class="pill">第 1 / 4 轮</span><span id="roomStatus" class="pill">状态：等待中</span><span id="revealModeInfo" class="pill">公布方式：-</span></div>
+    <div id="playersInfo" class="small muted" style="margin-top:8px;">当前房间成员：-</div>
+    <div id="themeInfo" class="small muted" style="margin-top:4px;">主题：自由创作</div>
+  </div>
+
+  <div id="writeCard" class="card hidden">
+    <label id="writeLabel">写下这一轮的句子</label>
+    <textarea id="lineInput" maxlength="80" placeholder="请输入一句诗，提交后本轮不可修改"></textarea>
+    <div class="small muted" style="margin-top:8px;">每轮最多 80 字。提交后进入等待状态，直到对方也提交。</div>
+    <div style="margin-top:12px;" class="row"><button class="btn-primary" onclick="roomPage.submitLine()">提交这一句</button><button class="btn-secondary" onclick="roomPage.refresh()">刷新状态</button></div>
+    <div id="submitStatus" class="small" style="margin-top:10px;"></div>
+  </div>
+
+  <div id="waitingCard" class="card hidden center">
+    <div id="waitingTitle" class="title" style="font-size:22px;margin-top:0;">等待中</div>
+    <div id="waitingText" class="subtitle" style="margin-bottom:10px;">请稍候</div>
+    <button class="btn-secondary" onclick="roomPage.refresh()">刷新状态</button>
+  </div>
+
+  <div id="roundRevealCard" class="card hidden">
+    <div class="topbar"><div><div class="title" style="font-size:22px;margin:0;">本轮揭晓</div><div class="small muted">当前房间已开启“每轮公布”模式</div></div><button id="nextRoundBtn" class="btn-primary" onclick="roomPage.goNextRound()">进入下一轮</button></div>
+    <div class="small muted" id="roundRevealMeta">第 1 轮</div>
+    <div id="roundRevealText" class="poem-box"></div>
+  </div>
+
+  <div id="revealCard" class="card hidden">
+    <div class="topbar"><div><div class="title" style="font-size:22px;margin:0;">揭晓结果</div><div class="small muted">全部轮次完成后显示完整诗歌</div></div><button id="revealBtn" class="btn-primary" onclick="roomPage.revealPoem()">揭晓</button></div>
+    <label>交错合成版</label>
+    <div id="mixedPoem" class="poem-box"></div>
+    <div class="row" style="margin-top:14px;"><div><label>A 的句子</label><div id="poemA" class="poem-box"></div></div><div><label>B 的句子</label><div id="poemB" class="poem-box"></div></div></div>
+    <div style="margin-top:12px;" class="row"><button class="btn-secondary" onclick="roomPage.copyResult()">复制结果</button><button class="btn-secondary" onclick="roomPage.publishCurrentPoem()">发布到作品广场</button><button class="btn-secondary" onclick="roomPage.restartRoom()">再来一局</button></div>
+    <div id="publishStatus" class="small muted" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="footer-note">建议把本页直接分享给同学，链接里会带房间邀请码。</div>
+</div>
+</body></html>

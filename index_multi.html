@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>双盲诗歌 Pro</title>
+<link rel="stylesheet" href="poem2_styles.css">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="poem2_app.js"></script>
+</head><body onload="BlindPoetry.initHome()">
+<div class="wrap">
+  <div class="title">双盲诗歌 Pro</div>
+  <div class="subtitle">两个人进入同一房间，轮流各写一句。在揭晓前，谁也看不到对方写的内容。现在支持多页面结构，手机浏览器可以自然左滑返回。</div>
+  <div id="navMount"></div>
+  <div class="notice">首页只负责创建房间和加入房间；作品广场、排行榜、房间页都拆成了独立页面，移动端返回体验会更自然。</div>
+
+  <div class="card">
+    <label>1. 先配置 Supabase</label>
+    <div class="row">
+      <div><label for="supabaseUrl">SUPABASE_URL</label><input id="supabaseUrl" placeholder="https://xxxx.supabase.co"></div>
+      <div><label for="supabaseAnonKey">SUPABASE_ANON_KEY</label><input id="supabaseAnonKey" placeholder="匿名公钥 anon key"></div>
+    </div>
+    <div style="margin-top:12px;"><button class="btn-secondary" onclick="BlindPoetry.saveConfig()">保存配置到本地</button></div>
+  </div>
+
+  <div class="card">
+    <label>2. 输入昵称</label>
+    <input id="nickname" maxlength="12" placeholder="例如：木木">
+    <div style="margin-top:12px;" class="row">
+      <button class="btn-primary" onclick="BlindPoetry.showCreate()">创建房间</button>
+      <button class="btn-secondary" onclick="BlindPoetry.showJoin()">加入房间</button>
+      <a class="btn btn-ghost center" href="gallery.html">作品广场</a>
+    </div>
+
+    <div id="createBox" class="hidden" style="margin-top:14px;">
+      <div class="row">
+        <div><label for="themeInput">主题</label><input id="themeInput" maxlength="20" placeholder="默认：自由创作"></div>
+        <div><label for="totalRounds">总轮数</label><select id="totalRounds"><option value="2">2 轮</option><option value="4" selected>4 轮</option><option value="6">6 轮</option></select></div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <div><label for="revealMode">公布方式</label><select id="revealMode"><option value="final">写满全部轮次后统一揭晓</option><option value="round">每轮完成后立即公布这一轮</option></select></div>
+        <div><label for="linePosition">房主书写部分</label><select id="linePosition"><option value="upper">我写上半句</option><option value="lower">我写下半句</option></select></div>
+      </div>
+      <div style="margin-top:12px;"><button class="btn-primary" onclick="BlindPoetry.createRoom()">确认创建房间</button></div>
+    </div>
+
+    <div id="joinBox" class="hidden" style="margin-top:12px;">
+      <label for="joinCode">邀请码</label>
+      <input id="joinCode" maxlength="6" placeholder="输入 6 位邀请码" style="text-transform:uppercase;">
+      <div class="small muted" style="margin-top:10px;">加入者不再自己选上下句，会自动分配为另一半。</div>
+      <div style="margin-top:12px;"><button class="btn-primary" onclick="BlindPoetry.joinRoom()">确认加入</button></div>
+    </div>
+  </div>
+  <div class="footer-note">建议通过微信直接分享房间页链接给同学使用。</div>
+</div>
+</body></html>

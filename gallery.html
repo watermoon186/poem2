@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>作品广场 | 双盲诗歌 Pro</title>
+<link rel="stylesheet" href="poem2_styles.css">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="poem2_app.js"></script>
+</head><body onload="BlindPoetry.initGallery()">
+<div class="wrap">
+  <div class="title">作品广场</div>
+  <div class="subtitle">这是独立页面，手机浏览器可以用系统返回或左滑回到上一页。</div>
+  <div id="navMount"></div>
+  <div class="card">
+    <div class="row"><input id="gallerySearch" placeholder="搜索主题 / 作者 / 内容关键词"><button class="btn-secondary" onclick="BlindPoetry.loadGallery()">搜索</button></div>
+  </div>
+  <div id="galleryList" class="list"></div>
+</div>
+</body></html>
