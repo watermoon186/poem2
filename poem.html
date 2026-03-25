@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>作品详情 - 双盲诗歌 Pro</title>
+  <link rel="stylesheet" href="poem2_styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="poem2_app.js"></script>
+</head>
+<body data-page="poem">
+  <div class="wrap">
+    <div class="topnav">
+      <div class="brand">作品详情</div>
+      <div class="navlinks">
+        <a href="gallery.html">返回作品广场</a>
+        <a href="ranking.html">返回排行榜</a>
+      </div>
+    </div>
+    <div class="card">
+      <h1 id="poemTitle" style="margin-top:0;"></h1>
+      <div id="poemMeta" class="meta"></div>
+      <div id="poemText" class="poem-box" style="margin-top:14px;"></div>
+      <div class="actions">
+        <button id="poemLikeBtn" class="btn-primary">点赞</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

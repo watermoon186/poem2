@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>房间列表 - 双盲诗歌 Pro</title>
+  <link rel="stylesheet" href="poem2_styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="poem2_app.js"></script>
+</head>
+<body data-page="rooms">
+  <div class="wrap">
+    <div class="topnav">
+      <div class="brand">房间列表</div>
+      <div class="navlinks">
+        <a href="index.html">首页</a>
+        <a class="active" href="rooms.html">房间列表</a>
+        <a href="gallery.html">作品广场</a>
+        <a href="ranking.html">排行榜</a>
+      </div>
+    </div>
+    <div class="notice">这里会展示公开且仍有效的房间。若双方都离开，房间会在 1 分钟后自动归档并从列表消失。想进入房间时，仍然需要邀请码。</div>
+    <div id="roomsList" class="list card"></div>
+  </div>
+
+  <div id="joinModalMask" class="modal-mask">
+    <div class="modal">
+      <h3 id="joinModalTitle" style="margin-top:0;">进入房间</h3>
+      <label for="joinNickname">昵称</label>
+      <input id="joinNickname" placeholder="请输入昵称" />
+      <label for="joinInviteCode" style="margin-top:12px;">邀请码</label>
+      <input id="joinInviteCode" placeholder="请输入邀请码" />
+      <div class="actions">
+        <button id="joinModalConfirm" class="btn-primary">确认进入</button>
+        <button id="joinModalClose" class="btn-secondary">取消</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

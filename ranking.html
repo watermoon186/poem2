@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>排行榜 - 双盲诗歌 Pro</title>
+  <link rel="stylesheet" href="poem2_styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="poem2_app.js"></script>
+</head>
+<body data-page="ranking">
+  <div class="wrap">
+    <div class="topnav">
+      <div class="brand">排行榜</div>
+      <div class="navlinks">
+        <a href="index.html">首页</a>
+        <a href="rooms.html">房间列表</a>
+        <a href="gallery.html">作品广场</a>
+        <a class="active" href="ranking.html">排行榜</a>
+      </div>
+    </div>
+    <div class="notice">点击任意作品都可以进入详情页查看全文。</div>
+    <div id="rankingList" class="list card"></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>房间 - 双盲诗歌 Pro</title>
+  <link rel="stylesheet" href="poem2_styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="poem2_app.js"></script>
+</head>
+<body data-page="room">
+  <div class="wrap" id="roomMain">
+    <div class="topnav">
+      <div>
+        <div class="brand">房间创作</div>
+        <div class="subtitle">支持房主结束房间，支持再来一局，支持发布时重新修改题目。</div>
+      </div>
+      <div class="navlinks">
+        <a href="index.html">首页</a>
+        <a href="rooms.html">房间列表</a>
+        <a href="gallery.html">作品广场</a>
+        <a href="ranking.html">排行榜</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div><div class="small">邀请码</div><div id="roomCode" class="code">—</div></div>
+        <div><div class="small">房主</div><div id="roomOwner">—</div></div>
+      </div>
+      <div class="statline">
+        <span class="badge">主题：<span id="roomTheme">—</span></span>
+        <span class="badge">身份：<span id="roomRole">—</span></span>
+        <span class="badge">书写部分：<span id="roomPart">—</span></span>
+        <span class="badge">轮次：<span id="roomRound">—</span></span>
+        <span class="badge">状态：<span id="roomStatus">—</span></span>
+        <span class="badge">公布方式：<span id="roomMode">—</span></span>
+      </div>
+      <div class="meta" id="roomMembers" style="margin-top:10px;"></div>
+      <div class="meta" id="roomHint" style="margin-top:6px;"></div>
+      <div class="actions">
+        <button id="roomRefreshBtn" class="btn-secondary">刷新</button>
+        <button id="roomExitBtn" class="btn-secondary">离开房间</button>
+        <span id="ownerOnly">
+          <button id="roomEndBtn" class="btn-danger">房主结束房间</button>
+        </span>
+      </div>
+    </div>
+
+    <div id="writeCard" class="card hidden">
+      <h3 style="margin-top:0;">当前轮次创作</h3>
+      <div id="writeLabel" class="meta"></div>
+      <textarea id="lineInput" placeholder="写下你这一轮的内容"></textarea>
+      <div class="actions">
+        <button id="submitLineBtn" class="btn-primary">提交本轮</button>
+      </div>
+    </div>
+
+    <div id="waitingCard" class="card hidden">
+      <h3 style="margin-top:0;">等待中</h3>
+      <div id="waitingText" class="meta"></div>
+    </div>
+
+    <div id="roundRevealCard" class="card hidden">
+      <h3 id="roundRevealTitle" style="margin-top:0;">本轮揭晓</h3>
+      <div id="roundRevealText" class="poem-box"></div>
+      <div class="actions">
+        <button id="nextRoundBtn" class="btn-primary">进入下一轮</button>
+      </div>
+    </div>
+
+    <div id="finalRevealCard" class="card hidden">
+      <h3 style="margin-top:0;">完整作品</h3>
+      <div id="mixedPoem" class="poem-box"></div>
+      <div class="actions">
+        <button id="revealPoemBtn" class="btn-secondary">揭晓作品</button>
+        <button id="restartBtn" class="btn-secondary">再来一局</button>
+      </div>
+      <div class="hr"></div>
+      <label for="publishTheme">发布到作品广场前，可重新修改题目</label>
+      <input id="publishTheme" placeholder="作品题目" />
+      <div class="actions">
+        <button id="publishBtn" class="btn-primary">发布到作品广场</button>
+      </div>
+      <div id="publishStatus" class="small"></div>
+    </div>
+  </div>
+</body>
+</html>

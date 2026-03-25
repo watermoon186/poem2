@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>双盲诗歌 Pro</title>
+  <link rel="stylesheet" href="poem2_styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="poem2_app.js"></script>
+</head>
+<body data-page="home">
+  <div class="wrap">
+    <div class="topnav">
+      <div>
+        <div class="brand">双盲诗歌 Pro</div>
+        <div class="subtitle">双人联诗，多页面版。房间公开展示，但进入仍需邀请码；双方都离开后，房间会在 1 分钟后自动归档。</div>
+      </div>
+      <div class="navlinks">
+        <a class="active" href="index.html">首页</a>
+        <a href="rooms.html">房间列表</a>
+        <a href="gallery.html">作品广场</a>
+        <a href="ranking.html">排行榜</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Supabase 配置</label>
+      <div class="grid two">
+        <div>
+          <label for="supabaseUrl">SUPABASE_URL</label>
+          <input id="supabaseUrl" placeholder="https://xxxx.supabase.co" />
+        </div>
+        <div>
+          <label for="supabaseAnonKey">SUPABASE_ANON_KEY</label>
+          <input id="supabaseAnonKey" placeholder="匿名公钥 anon key" />
+        </div>
+      </div>
+      <div class="actions">
+        <button id="saveConfigBtn" class="btn-secondary">保存配置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <label for="nickname">你的昵称</label>
+      <input id="nickname" placeholder="例如：水木娃娃" />
+      <div class="grid two" style="margin-top:14px;">
+        <div class="card" style="margin-top:0; box-shadow:none;">
+          <h3 style="margin-top:0;">创建房间</h3>
+          <label for="themeInput">主题</label>
+          <input id="themeInput" placeholder="自由创作" />
+          <div class="grid two" style="margin-top:12px;">
+            <div>
+              <label for="totalRounds">总轮数</label>
+              <select id="totalRounds">
+                <option value="4">4</option>
+                <option value="6">6</option>
+                <option value="8">8</option>
+              </select>
+            </div>
+            <div>
+              <label for="revealMode">公布方式</label>
+              <select id="revealMode">
+                <option value="final">最终统一公布</option>
+                <option value="round">每轮完成即公布</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <label for="linePosition">房主书写部分</label>
+            <select id="linePosition">
+              <option value="upper">上半句</option>
+              <option value="lower">下半句</option>
+            </select>
+          </div>
+          <div class="actions">
+            <button id="createRoomBtn" class="btn-primary">创建房间</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:0; box-shadow:none;">
+          <h3 style="margin-top:0;">输入邀请码进入</h3>
+          <label for="joinCode">邀请码</label>
+          <input id="joinCode" placeholder="6 位邀请码" />
+          <div class="notice" style="margin-top:12px;">
+            房间列表页只展示存在的房间，不直接进入。进入房间仍然需要邀请码。
+          </div>
+          <div class="actions">
+            <button id="joinRoomBtn" class="btn-primary">进入房间</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="joinModalMask" class="modal-mask">
+    <div class="modal">
+      <h3 id="joinModalTitle" style="margin-top:0;">进入房间</h3>
+      <label for="joinInviteCode">邀请码</label>
+      <input id="joinInviteCode" placeholder="请输入邀请码" />
+      <div class="actions">
+        <button id="joinModalConfirm" class="btn-primary">确认进入</button>
+        <button id="joinModalClose" class="btn-secondary">取消</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
